@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs")
 const multer = require("multer")
 const auth = require("../middleware/auth")
 const fs = require("fs")
+const path = require("path")
 const { log } = require("console")
 var storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -44,8 +45,11 @@ router.post("/do_register",upload.single("img"),async(req,resp)=>{
         else{
 
           const olddata =  await User.findByIdAndUpdate(id,{name : req.body.name, email:req.body.email,pass :req.body.pass,img:req.file.filename})
-          await fs.unlinkSync("public/img/"+olddata.img)
+          const filepath = path.join(__dirname,"../public/img/"+olddata.img);
+          
+          await fs.unlinkSync(filepath)
           resp.redirect("home")
+
 
         }
        
@@ -155,8 +159,9 @@ router.get("/do_delete",auth,async(req,resp)=>{
   try {
     const id = req.query.did
     const data =  await User.findByIdAndDelete(id);
-    await fs.unlinkSync("public/img/"+data.img)
-    console.log("public/img/"+data.img);
+    const filepath = path.join(__dirname,"../public/img/"+data.img);
+    await fs.unlinkSync(filepath)
+   
     resp.redirect("home")
 
   } catch (error) {
